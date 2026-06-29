@@ -48,11 +48,12 @@ Example:
         Price of a phone is 10K, and same is stored in Redis as well
         Now someone updates the price of that aprticular phone from 10k to 15k, now our db is updated but our redis uses stale data which still has 10k
         so when re-accessed we will still get 10k alone which is wrong
+        This is called as cache inconsistency: Database and cache contain different values.
 
     Solution:
         When ever we are updating our any specific product, at that time we need to delete the key present in our redis against that product.
         So what happens in our next hit against that product, Redis miss, it goes to fetch the data from DB and then store in Redis again and return the updated price
-        The above solution is called as CACHE-INVALIDATION
+        The above solution is called as CACHE-EVICTION[which means deleting the key] and CACHE-INVALIDATION
 
 Issue 1:
     Assume we are building a Rate Limiter, and for a get API, we are setting a following condition that

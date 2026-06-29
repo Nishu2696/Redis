@@ -32,4 +32,28 @@ public class UserService {
         userCacheService.cachedUser(newUser);
         return newUser;
     }
+
+//    cache Eviction
+//    After each update we are deleting the redis key
+    public User updateUser(
+            String id,
+            String name) {
+
+        UserEntity user =
+                userRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setName(name);
+
+        userRepository.save(user);
+
+        userCacheService.delete(id);
+
+        User newUser = new User();
+        newUser.setId(user.getId());
+        newUser.setName(user.getName());
+        newUser.setEmail(user.getEmail());
+
+        return newUser;
+    }
 }

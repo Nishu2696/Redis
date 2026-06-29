@@ -30,4 +30,9 @@ public class UserCacheService {
     public void refreshTTl(String key) {
         redisTemplate.expire(key, TTL); // A new TTL is being set
     }
+
+    public void delete(String id) {
+        String key = "user:" + id;
+        redisTemplate.delete(key);
+    }
 }
