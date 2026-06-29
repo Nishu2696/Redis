@@ -59,12 +59,12 @@ Eg:
                       macbook
                       ipad
    TO set the data we have many options such as 
-      rightPush          : Adds to the beginning of the list.
-      leftPush           : Adds to the end.
-      leftPushAll        : Push multiple values from the left. [listOps.leftPushAll("numbers", 3, 2, 1)] // 1 2 3
-      rightPushAll       : Push multiple values from the right. [listOps.rightPushAll("numbers", 4, 5, 6);] // 4, 5, 6
-      leftPushIfPresent  ; Push only if the list already exists. [listOps.leftPushIfPresent("numbers", 100);] // Empty array
-      rightPushIfPresent : Same as above
+      - rightPush          : Adds to the beginning of the list.
+      - leftPush           : Adds to the end.
+      - leftPushAll        : Push multiple values from the left. [listOps.leftPushAll("numbers", 3, 2, 1)] // 1 2 3
+      - rightPushAll       : Push multiple values from the right. [listOps.rightPushAll("numbers", 4, 5, 6);] // 4, 5, 6
+      - leftPushIfPresent  ; Push only if the list already exists. [listOps.leftPushIfPresent("numbers", 100);] // Empty array
+      - rightPushIfPresent : Same as above
 
               public void saveSearches() {
 
@@ -76,20 +76,20 @@ Eg:
                         list.rightPush("search", "ipad");
               }
  To fetch the elements similarly we have many options
-      leftpop                          : Remove first element. [Object value = listOps.leftPop("numbers");] // Already available 1, 2, 3 // after this line the list will contain only 2, 3 and the output of this line will be 1.
-      rightPop                         : Remove last element. [Object value = listOps.rightPop("numbers");] // Already available 1, 2, 3 // after this line the list will contain only 1, 2 and the output of this line will be 3.
-      range                            : Read a range of elements. [listOps.range("numbers", 0, -1);] // o/p: 1,2,3,4
-      index                            : Read by index. [Object value = listOps.index("numbers", 2);] list has [12. 20, 30, 40] o/p is 30
-      update                           : Replace an element by index. [listOps.set("numbers", 1, 100);] previously it contained 10,20,30, and after this line the list will have 10,100,30
-      size                             : Get list length. [Long size = listOps.size("numbers");] // list contains 10, 20, 30 the o/p will be 3
-      trim                             : Keep only a specified range. [listOps.trim("numbers", 0, 2);] // lis contains 1,2,3,4,5,6, the o/p will be 1,2,3 Note: the end index is also considered
-      remove by value                  : Remove matching values. [listOps.remove("numbers", 1, 20);] // syntax: listOps.remove(key, count, value), list had 10,20,30,40,50, after this line the o/p will be 10,30,40,50
+      - leftpop                          : Remove first element. [Object value = listOps.leftPop("numbers");] // Already available 1, 2, 3 // after this line the list will contain only 2, 3 and the output of this line will be 1.
+      - rightPop                         : Remove last element. [Object value = listOps.rightPop("numbers");] // Already available 1, 2, 3 // after this line the list will contain only 1, 2 and the output of this line will be 3.
+      - range                            : Read a range of elements. [listOps.range("numbers", 0, -1);] // o/p: 1,2,3,4
+      - index                            : Read by index. [Object value = listOps.index("numbers", 2);] list has [12. 20, 30, 40] o/p is 30
+      - update                           : Replace an element by index. [listOps.set("numbers", 1, 100);] previously it contained 10,20,30, and after this line the list will have 10,100,30
+      - size                             : Get list length. [Long size = listOps.size("numbers");] // list contains 10, 20, 30 the o/p will be 3
+      - trim                             : Keep only a specified range. [listOps.trim("numbers", 0, 2);] // lis contains 1,2,3,4,5,6, the o/p will be 1,2,3 Note: the end index is also considered
+      - remove by value                  : Remove matching values. [listOps.remove("numbers", 1, 20);] // syntax: listOps.remove(key, count, value), list had 10,20,30,40,50, after this line the o/p will be 10,30,40,50
                                          key, count, value ---> if count is 1, only the first occurence is removed
                                                            ---> if count is 0, all the occurence is removed.
-      Insert relative to another value : Insert before a pivot value.
+      - Insert relative to another value : Insert before a pivot value.
                                                leftPush(key, pivot, value) ----> . [listOps.leftPush("numbers", 20, 15);] list already contains 10,20,30 and after this line it would be 10,15,20,30
                                                rightPush(key, pivot, value) ----> . [listOps.rightPush("numbers", 20, 25);] list already contains 10,20,30 and after this line it would be 10,20,25,30
-      Move btwn lists                  : Atomically move an element between lists
+      - Move btwn lists                  : Atomically move an element between lists
                                                 public void processNextJob() {
 
                                                      ListOperations<String, Object> listOps = redisTemplate.opsForList();
@@ -135,6 +135,7 @@ Eg:
             .remove("skills", "Redis");
 
 5. opsForZSet() (Sorted Set), stores Value + Score
+        The principle used behind this HashTable(Fast look up) + Skip List(Maintain order)
         The list already contains:
                    Nishaanth 95
                    Rahul 80

@@ -24,9 +24,9 @@ public class RedisConfig {
 
 /*
 * If we don't add line 14-18, while getting the object we will get random objects [\xac\xed\x00\x05sr...]
-* Reason being to store the data in Redis we need it in JSON format, but the data available is in Java Object
-* Hence a serializer is being used while setting the data
-* And at the fetch place we are de-serializing it back
+* Reason being to store the data in Redis we need it in Bytes format, but the data available is in Java Object
+* Hence a serializer is being used while setting the data, where Java Object -> JSON first -> then serialized to store it in bytes format
+* And at the fetch place we are de-serializing it back, serialized bytes -> deserialized -> resultant is a JSON -> and then we can convert this to java object
 *
 * NOTE: Here we have used RedisTemplate ---> This is used for objects
 *       If we had only Strings to be stored in Redis at that time instead of using Redis Template we will be using StringRedisTemplate
@@ -36,7 +36,7 @@ public class RedisConfig {
                     redisTemplate.setKeySerializer(new StringRedisSerializer()); // Convert all the redis key into plain string
                     redisTemplate.setHashKeySerializer(new StringRedisSerializer());
                     redisTemplate.setHashValueSerializer(RedisSerializer.json());
-                    redisTemplate.setValueSerializer(RedisSerializer.json()); // Convert Java Object into JSON and then stores it in Redis
+                    redisTemplate.setValueSerializer(RedisSerializer.json());
                     redisTemplate.afterPropertiesSet();
                     return redisTemplate;
                 }
