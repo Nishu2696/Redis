@@ -32,6 +32,11 @@ public class UserService {
         System.out.println("Reading from DB");
         return userRepository.findById(id).orElseThrow();
     }
+//    Internally the full flow of above code
+//    when first time getUser(101) is hit, this key is not available in the redis
+//    so the flow is getUser(101) -> redis miss -> hit db -> get data -> redisTemplate.opsForValue().set(key: 101, value: user), how this is called, this is because we are using @Cacheable annotation
+//    after this if we hit again getUser(101) -> spring cache has the value -> return from here itself
+
 //    in the above example key is using single value
 //    We can multiple combination based key name as well
     @Cacheable(
