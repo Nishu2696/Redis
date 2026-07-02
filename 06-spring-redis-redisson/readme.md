@@ -102,3 +102,6 @@ Issue with the above behaviour:
                     TTL Expires
                         ↓
                     Lock Removed
+
+NOTE: Redisson is only used to solve our issue of distributed locks, but if we need Locking + Caching
+      We will be needing both redissonConfig.java file as well as redisConfig.java file

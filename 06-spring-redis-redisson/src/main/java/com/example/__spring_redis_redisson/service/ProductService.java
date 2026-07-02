@@ -47,4 +47,95 @@ public class ProductService {
             lock.unlock();
         }
     }
-}
+
+//    Note here we have used RLock lock = redissonClient.getLock(lockName);
+
+//    RedisTemplate Gives
+    //    opsForValue()
+    //    opsForHash()
+    //    opsForSet()
+    //    opsForList()
+
+//    Redisson Gives
+    //    getLock()
+    //    getMap()
+    //    getSet()
+    //    getQueue()
+    //    getSemaphore()
+    //    getReadWriteLock()
+
+//    similarly we have used lock.lock()
+//    the drawback with this is, what if the the task that is running in the background takes longer time or it gets crashed
+//    then in that case our watch dog will be monitoring continuosly and the lock will never be released
+
+//          App-1
+//            │
+//            ▼
+//          Owns Lock
+//     ----------------
+//          App-2
+//            │
+//            ▼
+//          Waiting
+//          Waiting
+//          Waiting
+//          Waiting
+
+//    For this reason companies in production usually use lock.tryLock()
+
+//                boolean acquired = lock.tryLock(
+//                        5,
+//                        30,
+//                        TimeUnit.SECONDS
+//                );
+//                if(acquired) {
+//
+//                    try {
+//
+//                        processOrder();
+//
+//                    } finally {
+//
+//                        lock.unlock();
+//                    }
+//
+//                } else {
+//
+//                    throw new RuntimeException(
+//                            "Resource Busy"
+//                    );
+//                }
+
+//                    tryLock(
+//                            waitTime,
+//                            leaseTime,
+//                            unit
+//                    )
+
+//                    waitTime = 5
+//                        Wait up to 5 seconds
+//                        to acquire lock
+//
+//                    leaseTime = 30
+//                        If acquired,
+//                        auto release after 30 sec
+//
+//                        Request Arrives
+//                              │
+//                              ▼
+//                        Wait For Lock
+//                              │
+//                              ▼
+//                            0 sec
+//                            1 sec
+//                            2 sec
+//                            3 sec
+//                            4 sec
+//
+//                        Lock Available?
+//
+//                        YES → Acquire
+//
+//                        NO → Give Up
+
+//NOTE: If we are using lock.tryLock(), then redissson watch dog will be disabled because we have explicitly mentioned a ttl
