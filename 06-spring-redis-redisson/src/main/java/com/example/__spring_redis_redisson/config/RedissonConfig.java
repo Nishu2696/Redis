@@ -1,5 +1,6 @@
 package com.example.__spring_redis_redisson.config;
 
+import org.apache.catalina.Cluster;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
@@ -237,6 +238,12 @@ public class RedissonConfig {
 //                    ┌──────┬──────┬──────┐
 //                    ▼      ▼      ▼      ▼
 //                  Node1  Node2   Node3  Node 4
+//                    |      |      |      |
+//                    ▼      ▼      ▼      ▼
+//                Master1 Master2 Master3 Master4
+//                    |      |      |      |
+//                    ▼      ▼      ▼      ▼
+//              Replica1 Replica2 Replica3 Replica4
 
 //            config.useClusterServers()
 //                    .addNodeAddress(
@@ -246,3 +253,202 @@ public class RedissonConfig {
 //            );
 
 // Redis cluster helps in high availability + horizontal scaling. Data split across multiple redis server, this is called as Sharding
+// we create multiple master cluster(6379, 6380, 6381,...) and corresponding replicas(6385, 6386, 6387,...)
+//
+//        Suppose
+//            Master2 crashes.
+//            Master1
+//            Master2 ❌
+//            Master3
+//
+//        Replica2 becomes
+//            Master2 (New)
+//
+//        Automatically: Unlike Sentinel,
+//            Redis Cluster already knows all the nodes.
+//            There is no separate Sentinel process.
+//            The cluster handles failover internally.
+
+//  We are taking an example, where we need Redis Server, and we are not going to define which one is master or replica
+//        Terminal 1:
+//        redis-server \
+//                --port 6379 \
+//                --cluster-enabled yes \
+//                --cluster-config-file nodes-6379.conf \
+//                --cluster-node-timeout 5000 \
+//                --appendonly yes
+//        Terminal 2:
+//        redis-server \
+//                --port 6380 \
+//                --cluster-enabled yes \
+//                --cluster-config-file nodes-6380.conf \
+//                --cluster-node-timeout 5000 \
+//                --appendonly yes
+//        Terminal 3:
+//        redis-server \
+//                --port 6381 \
+//                --cluster-enabled yes \
+//                --cluster-config-file nodes-6381.conf \
+//                --cluster-node-timeout 5000 \
+//                --appendonly yes
+//        Terminal 4:
+//        redis-server \
+//                --port 6382 \
+//                --cluster-enabled yes \
+//                --cluster-config-file nodes-6382.conf \
+//                --cluster-node-timeout 5000 \
+//                --appendonly yes
+//        Terminal 5:
+//        redis-server \
+//                --port 6383 \
+//                --cluster-enabled yes \
+//                --cluster-config-file nodes-6383.conf \
+//                --cluster-node-timeout 5000 \
+//                --appendonly yes
+//        Terminal 6:
+//        redis-server \
+//                --port 6384 \
+//                --cluster-enabled yes \
+//                --cluster-config-file nodes-6384.conf \
+//                --cluster-node-timeout 5000 \
+//                --appendonly yes
+
+// Terminal 7:
+//        redis-cli --cluster create \
+//                127.0.0.1:6379 \
+//                127.0.0.1:6380 \
+//                127.0.0.1:6381 \
+//                127.0.0.1:6382 \
+//                127.0.0.1:6383 \
+//                127.0.0.1:6384 \
+//                --cluster-replicas 1
+
+//    What does "--cluster-replicas 1" mean?
+//    It means
+//                                    Each Master
+//                                        ↓
+//                                    Gets one Replica
+
+//    so, Redis automatically creates
+//
+//            Master1
+//                ↓
+//            Replica1
+//
+//            Master2
+//                ↓
+//            Replica2
+//
+//            Master3
+//                ↓
+//            Replica3
+//
+//    You don't manually say: 6382 is replica of 6379
+//
+//    Redis decides the mapping automatically.
+
+//Now lets understand how Redis cluster is powerful and its internal working
+// Lets understand this with an example
+// we have 3 masters configured for now lets assume
+
+//    Slot Range        Owner
+//    ------------------------
+//    0-5460            Master1
+//    5461-10922        Master2
+//    10923-16383       Master3
+//
+//    what is this slot, and what is this number 16384?
+//        Consider slot has a broker which decides a particular data, needs to be stored in which master
+//        Now lets see whats this number 16384,
+//            Before this first understand what stores inside slots -> it stores nothing, it just generates a hash code region
+//            Assume i have to store "user:101" data inside our master cluster
+//                Once this request comes (CRC 16) user:101 -> and we would get 16 digiti hashcode
+//                What is this CRC - 16, it is a string -> integer based generator, its different from MD5 hash or UUID, because this contains alphaNumeric value
+//                But CRC-16 only generates 16 digit by converting string to Integer so this will be always unique for a particular stringInteger value
+//
+//            (CRC 16) user:101 -> Generates a hash code as 43890 as the hashcode
+//                43890%16384 = 13867
+//                Now we have 3 Master and 13867 lies inside Master 3, and the data goes and stores inside Master 3
+//
+//            Now when the next time user wants to fetch the details of user:101
+//                slot comes into play, CRC 16 will generate a similar hashcode how we generated initially
+//                We would get the value as 13867, and this is in Master 3, now the Redis goes and search user:101 in Master 3
+//
+//        Now lets understand this number 16384,
+//            this is just a max number which have been figured out till now, because each slot can stores billions of records
+//            now lets see 1,000,000,000 * 16384 -> this is more than enough, thats why this is just a number
+
+
+//    Now lets understand one more concept of Redis Cluster
+//    As we discussed above, initially we created 3 cluster, and lets assume there are few data stored inside our masters, like user:101
+//
+//    Now due to some reasons, like Memory full or CPU overloaded, we add one more Master, so now we have Master 4
+//    Now the slots split will get modified
+//
+//    //    Slot Range        Owner
+//    //    ------------------------
+//    //    0-4095           Master1
+//    //    4096-8191        Master2
+//    //    8192-12287       Master3
+//    //    12288-16383      Master4
+//
+//    as soon as we add another Master, now the data will also get transfered automatically to there respective Masters based on the slot
+//            previously we discussed user:101 -> had a hashcode of 13867 and its data was stored in Master 3
+//            Now as we have added another Master cluster, and based on this this user data "user:101" will get automatically transfered to Master 4 and this is called as SLOT MIGRATION
+//
+//            So Redis copies every key whose slot lies in that range.
+//
+//            Now if the client tries to fetch the data for user:101, it will return the data from Master 4
+
+//            STEP 1
+//
+//                user:104
+//                    │
+//                    ▼
+//                CRC16
+//                    │
+//                    ▼
+//                Slot = 9000
+//                    │
+//                    ▼
+//                Routing Table
+//                9000 → Master2
+//                    │
+//                    ▼
+//                Master2 stores:
+//                user:104 = David
+//
+//                =========================
+//                Add Master4
+//                =========================
+//
+//                Routing changes
+//                9000 → Master3
+//
+//            Redis immediately migrates all keys
+//            belonging to Slot 9000
+//
+//                Master2 --------------------> Master3
+//                user:104                     user:104
+//                order:10                     order:10
+//                cart:50                      cart:50
+//
+//
+//                =========================
+//                Future Request
+//                =========================
+//
+//                user:104
+//                    │
+//                    ▼
+//                CRC16
+//                    │
+//                    ▼
+//                Slot = 9000
+//                    │
+//                    ▼
+//                Routing Table
+//                9000 → Master3
+//                    │
+//                    ▼
+//                Master3 returns David
