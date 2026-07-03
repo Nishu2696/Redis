@@ -1,6 +1,6 @@
 This is the most important interview question being asked.
 
-Redis usually stores data in-memory which means "data lives in memory" 
+Redis usually stores data in-memory which means "data lives in memory in a RAM" 
 
 we have data stored in our Redis -> power goes off -> and once the power is back redis restart again -> but all the data gets cleared off
 Resultant is data is lost
@@ -14,7 +14,7 @@ Solution for this: **REDIS PERSISTANCE**
     *) AOF: Append Only File
 
 RDB: 
-    Take a photo of Redis Memory, redis creates dump.rdb and inside everything stored in redis will be stored as a snapshot
+    Take a photo of Redis Memory, redis creates dump.rdb and inside everything stored in redis will be taken as a snapshot and stored in dump.rdf file
 
             Memory
                 │
@@ -33,7 +33,7 @@ Snapshot Taken
 12:10 PM
 Snapshot Taken
 
-inside our redis.conf file we will store something like this
+inside our redis.conf file we will having something like this by default
     a) save 900 1
     b) save 300 10
     c) save 60 10000
@@ -61,7 +61,7 @@ So in the above as we have mentioned every 5 minutes we will be taking a screens
 10:06 -> User B data added
 10:07 -> Redis crashes
 
-Now what happens is only user A data added is stored, but we have lost User B data is lost
+Now what happens is only user A data added is stored, but we have lost User B data
 
 **RDB Advantages:**
 
@@ -74,14 +74,14 @@ Now what happens is only user A data added is stored, but we have lost User B da
 
 
 **AOF: Append Only File**
-Why do we need this, because to resolve the issue, what if in the 5 minutes we get almost 1L data, and before we take snapshot, redis crashes
+Why do we need this, because to resolve the above issue, what if in the 5 minutes we get almost 1L data, and before we take snapshot, redis crashes
 
 Instead of: Take Photo
 they chose: Write Every Command
 
 In our local if redis already installed then we would have redis.conf file which already has basic information like port no, username, password, RDB data, AOF data
 
-So currently we are discussing about RDB and AOF, will discuss about this alone for now
+So we would have all the configuration about everything including about RDB and AOF, will discuss about this alone for now
 
 #############################################
 # AOF
