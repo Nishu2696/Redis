@@ -14,7 +14,7 @@ public class RedisLuaScriptService {
     private final RedisScript<Long> rateLimiterScript;
 
     public boolean allowRequest(String userId) {
-        String key = "rate_limit" + userId;
+        String key = "rate_limit:" + userId;
         long currentCount = redisTemplate.execute(
                 rateLimiterScript,
                 Collections.singletonList(key),
@@ -23,3 +23,6 @@ public class RedisLuaScriptService {
         return currentCount <= 100;
     }
 }
+
+//Collections.singletonList(key),
+//Why List<String> keys? Because redis supports of passing multiple keys to LUA Script
